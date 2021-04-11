@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-from .forms import UserLoginForm
+from .forms import UserLoginForm, UserRegisterForm
 from django.contrib import messages
 
 
@@ -28,3 +29,21 @@ def user_logout(request):
         logout(request)
         messages.success(request, 'you logged out successfully', 'success')
         return redirect('posts:all-posts')
+
+
+def user_register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            email = form.cleaned_data['email']
+            user = User.objects.create_user(username, email, password)
+            messages.success(request, 'You registered successfully', 'success')
+            login(request, user)
+            return redirect('posts:all-posts')
+
+    else:
+        form = UserRegisterForm()
+        return render(request, 'account/register.html', {'form': form})
